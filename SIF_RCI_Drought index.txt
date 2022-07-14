@@ -1,0 +1,349 @@
+
+;Spatial average--------------------------------------------------------------------
+a=addfile("SIF_8days_US_0.5degree_hi2lores_Wrap_WITHTIME_46_week_GOD-HELP-ME_2007_2018.nc","r")
+lat=a->lat
+lon=a->lon 
+
+SIF=a->SIF
+
+corr_july=new((/dimsizes(SIF&time)/46/),"float")
+size=dimsizes(SIF)
+;size=dimsizes(RCI)
+ntime=size(0)
+nlat=size(1)
+nlon=size(2)
+copy_VarCoords(SIF(0:ntime-1:46,0,0), corr_july)
+Sif_month=dimsizes(corr_july)
+july_count=Sif_month(0)
+day=SIF&time
+bbb=0
+ttt=0
+
+example_rci=RCI(:,closest_val(35.55,lat):closest_val(40.45,lat),closest_val(-100.55,lon):closest_val(-95.55,lon))
+
+ do imonth=0,july_count-1
+
+;SIF_july=SIF(closest_val(day(22)+bbb,day):closest_val(day(22)+bbb+30-3,day),closest_val(45.55,lat):closest_val(50.45,lat),closest_val(-105.55,lon):closest_val(-100.55,lon))
+SIF_july=RCI(closest_val(day(15)+bbb,day):closest_val(day(15)+bbb+60-3,day),closest_val(35.55,lat):closest_val(40.45,lat),closest_val(-100.55,lon):closest_val(-95.55,lon))
+
+
+
+SIF_july_SpaAve = dim_avg_n_Wrap(SIF_july,(/1,2/))
+
+print( SIF_july_SpaAve)
+
+
+;sif===
+;corr_july(ttt)=max(SIF_july_SpaAve)
+
+;rci======
+rci_max=max(SIF_july_SpaAve)
+rci_min=min(SIF_july_SpaAve)
+if (abs(rci_max) .gt. abs(rci_min)) then
+corr_july(ttt) = rci_max
+else
+corr_july(ttt) = rci_min
+end if
+;==========
+print("time=" +SIF_july&time)
+print("max=" +corr_july(ttt))
+time_july=SIF_july&time
+time_july!0= "time"
+time_july@long_name = "days since 1970-001- 00:00:00"
+time_july@units = "Year" 
+corr_july&time(ttt)=time_july(0)
+
+
+
+;statistic_rci--------------------------------
+
+corr_norm(ttt,:,:)=SIF_july(closest_val(corr_july(ttt),SIF_july_SpaAve),:,:)
+corr_norm&time(ttt)=time_july(0)
+
+;confirm-------------------
+dim_avg_n_Wrap(corr_norm,(/1,2/))
+
+
+bbb=bbb+365
+ttt=ttt+1
+;delete([/SIF_august,SIF_august_SpaAve,SIFf_august/])
+delete([/SIF_july,SIF_july_SpaAve,time_july/])
+end do
+
+
+;Grided =============================================================================================
+a=addfile("SIF_8days_US_0.5degree_hi2lores_Wrap_WITHTIME_46_week_2001-2018.nc","r")
+lat=a->lat
+lon=a->lon 
+
+
+;lat=RCI&lat
+;lon=RCI&lon
+
+
+SIF=a->SIF(:,closest_val(35.55,lat):closest_val(40.45,lat),closest_val(-100.55,lon):closest_val(-95.55,lon))
+;RCIi=RCI(:,closest_val(35.55,lat):closest_val(40.45,lat),closest_val(-100.55,lon):closest_val(-95.55,lon))
+
+
+corr_augut=new((/dimsizes(SIF&time)/46,dimsizes(SIF&lat),dimsizes(SIF&lon)/),"float")
+;corr_augut=new((/dimsizes(RCIi&time)/46,dimsizes(RCIi&lat),dimsizes(RCIi&lon)/),"float")
+size=dimsizes(SIF)
+;size=dimsizes(RCIi)
+ntime=size(0)
+nlat=size(1)
+nlon=size(2)
+copy_VarCoords(SIF(0:ntime-1:46,:,:), corr_augut)
+;copy_VarCoords(RCIi(0:ntime-1:46,:,:), corr_augut)
+Sif_month=dimsizes(corr_augut)
+augut_count=Sif_month(0)
+day=SIF&time
+;day=RCIi&time
+bbb=0
+ttt=0
+
+
+ do imonth=0,augut_count-1
+print(ttt)
+;SIF_augut=SIF(closest_val(day(22)+bbb,day):closest_val(day(22)+bbb+30-3,day),:,:)
+SIFf_augut=RCIi(closest_val(day(15)+bbb,day):closest_val(day(15)+bbb+30-6,day),:,:)
+
+
+
+;sif=======
+
+
+;SIF_augut_max = dim_avg_n_Wrap(SIF_augut,0)
+;corr_augut(ttt,:,:)=SIF_augut_max
+;rci=======
+
+aaa=0
+ccc=0
+do ilat=0,nlat-1,1
+;print(aaa)
+do ilon=0,nlon-1,1
+;print(ccc)
+rci_max=max(SIF_augut(:,aaa,ccc))
+rci_min=min(SIF_augut(:,aaa,ccc))
+
+if (all((ismissing(SIF_augut(:,aaa,ccc)))))  then
+corr_augut(ttt,aaa,ccc)=SIF_augut@_FillValue
+
+else if (abs(rci_max) .gt. abs(rci_min)) then
+corr_augut(ttt,aaa,ccc) = rci_max
+else
+corr_augut(ttt,aaa,ccc) = rci_min
+end if
+end if
+
+ccc=ccc+1
+end do
+aaa=aaa+1
+ccc=0
+end do
+
+
+
+;SIF_augut_max !0="lat"
+;SIF_augut_max !1="lon"
+
+;SIF_augut_max&lat=SIF_augut&lat
+;SIF_augut_max&lon=SIF_augut&lon
+;=======
+
+
+
+
+
+time_augut=SIF_augut&time
+time_augut!0= "time"
+time_augut@long_name = "days since 1970-001- 00:00:00"
+time_augut@units = "Year" 
+corr_augut&time(ttt)=time_augut(0)
+
+bbb=bbb+365
+ttt=ttt+1
+;delete([/SIF_augut,SIF_augut_max,time_augut/])
+end do
+
+
+
+; Excel-----------------------------------------------------
+dims   = dimsizes(corr_july)
+ time1d = ndtooned(conform_dims(dims,corr_july&time,0))
+
+ ;lat1d  = ndtooned(conform_dims(dims,corr_july&lat, 1))
+ ;lon1d  = ndtooned(conform_dims(dims,corr_july&lon, 2))
+
+
+field_names = (/ corr_july&time@long_name + " ["  + corr_july&time@units + "]", \
+                   corr_july@long_name      + " ["  + corr_july@units      + "]" /)
+
+
+
+ ;field_names = (/ corr_july&time@long_name + " ["  + corr_july&time@units + "]", \
+    ;               corr_july&lat@long_name  + " ["  + corr_july&lat@units  + "]", \
+    ;               corr_july&lon@long_name  + " ["  + corr_july&lon@units  + "]", \
+    ;               corr_july@long_name      + " ["  + corr_july@units      + "]" /)
+
+header = [/str_join(field_names,",")/]
+ csv_filename = "SIF_July_0.5_45-50_105-100_2007-2018_30-3_withzeroes_V3.csv"
+  system("rm -rf " + csv_filename)
+  write_table(csv_filename, "w", header, "%s")
+t1d  = ndtooned(corr_july)
+ alist  = [/time1d,t1d/]
+format = "%g,%g,%g,%g,%g,%g,%g"
+ write_table(csv_filename, "a", alist, format)
+  delete([/csv_filename, alist, format,dims,field_names,header/])
+
+
+
+;PLOT============================================================================
+
+
+wks = gsn_open_wks("png","Histograms_pdf")
+;---Create array to hold plots.
+  nplot    = 12
+  plot     = new(nplot,graphic)
+res          = True
+  res@gsnDraw  = False                          ; don't draw
+  res@gsnFrame = False                          ; don't advance frame
+  ;res@cnInfoLabelOn = False                     ; turn off cn info label
+;res@gsnAddCyclic = False
+
+
+res@tiMainString = "2007"
+y=ndtooned(corr_norm(0,:,:))
+;print(avg(corr_norm(0,:,:)))
+;print(stddev(corr_norm(0,:,:)))
+;plot_2007 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2008")
+;res  = True
+ ;res@gsnCenterString = "2008"
+ plot_2007 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+
+
+
+res@tiMainString = "2008"
+y=ndtooned(corr_norm(1,:,:))
+;plot_2008 = gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2008")
+;res  = True
+ ;res@gsnCenterString = "2008"
+ plot_2008 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+res@tiMainString = "2009"
+y=ndtooned(corr_norm(2,:,:))
+;plot_2009 =  gsn_histogram(wks,y,res)
+
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2009")
+;res  = True
+ ;res@gsnCenterString = "2009"
+ plot_2009 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+res@tiMainString = "2010"
+y=ndtooned(corr_norm(3,:,:))
+;plot_2010 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2010")
+;res  = True
+ ;res@gsnCenterString = "2010"
+ plot_2010 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+
+res@tiMainString = "2011"
+y=ndtooned(corr_norm(4,:,:))
+;plot_2011 =   gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2011")
+;res  = True
+ ;res@gsnCenterString = "2011"
+ plot_2011 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+
+res@tiMainString = "2012"
+y=ndtooned(corr_norm(5,:,:))
+;plot_2012 = gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2012")
+;res  = True
+ ;res@gsnCenterString = "2012"
+ plot_2012 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+
+
+res@tiMainString = "2013"
+y=ndtooned(corr_norm(6,:,:))
+;plot_2013 = gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2013")
+;res  = True
+ ;res@gsnCenterString = "2013"
+ plot_2013 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+
+
+res@tiMainString = "2014"
+y=ndtooned(corr_norm(7,:,:))
+;plot_2014 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2014")
+;res  = True
+ ;res@gsnCenterString = "2014"
+ plot_2014 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+res@tiMainString = "2015"
+y=ndtooned(corr_norm(8,:,:))
+;plot_2015 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2015")
+;res  = True
+ ;res@gsnCenterString = "2015"
+ plot_2015 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+res@tiMainString = "2016"
+y=ndtooned(corr_norm(9,:,:))
+plot_2016 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2016")
+;res  = True
+ ;res@gsnCenterString = "2016"
+ plot_2016 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+res@tiMainString = "2017"
+y=ndtooned(corr_norm(10,:,:))
+;plot_2017 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2017")
+;res  = True
+ ;res@gsnCenterString = "2017"
+ plot_2017 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+res@tiMainString = "2018"
+y=ndtooned(corr_norm(11,:,:))
+plot_2018 =  gsn_histogram(wks,y,res)
+zpdf = pdfx(y, 0, False)   ; default is 25
+ ;wks  = gsn_open_wks ("png","PDFX_2018")
+;res  = True
+ ;res@gsnCenterString = "2018"
+ plot_2018 = gsn_csm_xy (wks, zpdf@bin_center, zpdf,res)
+
+ plot(0)=plot_2007
+ plot(1)=plot_2008
+ plot(2)=plot_2009
+ plot(3)=plot_2010
+ plot(4)=plot_2011
+ plot(5)=plot_2012
+ plot(6)=plot_2013
+ plot(7)=plot_2014
+ plot(8)=plot_2015
+ plot(9)=plot_2016
+ plot(10)=plot_2017
+ plot(11)=plot_2018
+
+
+gsn_panel(wks,plot,(/3,4/),False)
+
