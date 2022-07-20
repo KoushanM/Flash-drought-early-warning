@@ -70,7 +70,7 @@ bbb=0
 ttt=0
 ;statistic
 
-example_rci=RCI(:,closest_val(35.55,lat_sif):closest_val(40.45,lat_sif),closest_val(-100.55,lon_sif):closest_val(-95.55,lon_rci))
+example_rci=RCI(:,closest_val(35.55,lat_rci):closest_val(40.45,lat_rci),closest_val(-100.55,lon_rci):closest_val(-95.55,lon_rci))
 corr_norm_rci=new((/dimsizes(RCI&time)/46,dimsizes(example_rci&lat),dimsizes(example_rci&lon)/),"float")
 copy_VarCoords(example_rci(0:ntime-1:46,:,:), corr_norm_rci)
 
