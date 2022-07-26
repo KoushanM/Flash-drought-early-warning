@@ -1,5 +1,6 @@
 
- a=addfile("SIF_8days_US_0.5degree_hi2lores_Wrap_WITHTIME_46_week_GOD-HELP-ME_2007_2018.nc","r")
+ ;Upload the netcdf data
+ a=addfile("SIF_8days_US_0.5degree_hi2lores_Wrap_WITHTIME_46_week2007_2018.nc","r")
 
 lattt=a&lat
 lonnn=a&lon
@@ -347,7 +348,7 @@ reshh@cnLevelSelectionMode = "ExplicitLevels"   ; set explicit contour levels
  
    reshh@cnFillColors = (/ 2,13,29,45,59,74,120,168,174,190,209,227,240/)  ; set the colors to be used
     
-  ;plot2018 = gsn_csm_contour_map(wks,RCI(6,:,:),reshh)
+
 
 
 reshh@cnConstFEnableFill=True
